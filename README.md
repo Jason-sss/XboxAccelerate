@@ -2,7 +2,7 @@
 
 XboxDownload（游戏下载加速软件）的 **B/S 架构重构版**。
 
-基于https://github.com/skydevil88/XboxDownload项目重构
+基于 https://github.com/skydevil88/XboxDownload 项目重构
 
 原版是 C#/.NET + Avalonia 的 Windows 桌面应用（`/opt/workspace/XboxDownload/`）。
 本项目用 **Python 后端 + 浏览器前端** 重写，支持 **x86_64 / arm64**，
