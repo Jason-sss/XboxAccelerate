@@ -1,0 +1,55 @@
+services:
+  xboxdownload-web:
+    build:
+      context: .
+      args:
+        BASE_IMAGE: ${BASE_IMAGE:-docker.m.daocloud.io/library/python:3.11-slim-bookworm}
+        BUILDER_IMAGE: ${BUILDER_IMAGE:-docker.m.daocloud.io/library/python:3.11-slim-bookworm}
+        PIP_INDEX_URL: ${PIP_INDEX_URL:-https://mirrors.aliyun.com/pypi/simple/}
+    image: ${IMAGE_NAME:-xboxdownload-web:latest}
+    container_name: xboxdownload-web
+    restart: unless-stopped
+
+    ports:
+      - "${WEB_PORT:-8080}:8080"      # management UI + JSON API
+      - "${DNS_PORT:-5353}:53/udp"    # acceleration DNS server
+      - "${DNS_PORT:-5353}:53/tcp"
+      - "${HTTP_PORT:-8081}:80"       # HTTP acceleration listener
+      - "${HTTPS_PORT:-8443}:443"     # HTTPS acceleration listener
+
+    volumes:
+      # Persists settings.json, host mappings and the generated certificates.
+      - xbd-state:/state
+
+    environment:
+      XBD_HTTP_HOST: "0.0.0.0"
+      XBD_HTTP_PORT: "8080"
+      XBD_STATE_DIR: "/state"
+      XBD_DATA_DIR: "/app/data"
+      XBD_WEB_DIR: "/app/web"
+      XBD_LOG_LEVEL: "${LOG_LEVEL:-info}"
+
+    # The DNS server binds port 53 and the proxy binds 80/443, so the
+    # container needs CAP_NET_BIND_SERVICE.
+    cap_add:
+      - NET_BIND_SERVICE
+
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8080/api/health', timeout=4).status==200 else 1)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  xbd-state:

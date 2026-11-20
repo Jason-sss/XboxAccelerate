@@ -1,0 +1,33 @@
+﻿# Certificate domain mapping.
+#
+# When a connection is pinned to an explicitly chosen CDN edge IP, that
+# edge often presents a certificate issued for a *related* hostname rather
+# than the one the client asked for. This file declares which certificate
+# names are acceptable for a given host.
+#
+# Format:  "<host or *wildcard>" = ["<acceptable cert name>", ...]
+#
+# The names below mirror the Akamai certificate that the Xbox / Microsoft
+# delivery edges present.
+
+"*akamai.net" = ["*.akamai.net", "*.akamaihd.net", "*.akamaized.net", "*.akamaihd-staging.net", "*.akamaized-staging.net"]
+"*akamaihd.net" = ["*.akamai.net", "*.akamaihd.net", "*.akamaized.net", "*.akamaihd-staging.net", "*.akamaized-staging.net"]
+"*akamaized.net" = ["*.akamai.net", "*.akamaihd.net", "*.akamaized.net", "*.akamaihd-staging.net", "*.akamaized-staging.net"]
+
+# Xbox / Microsoft delivery
+"*xboxlive.com" = ["*.xboxlive.com", "*.akamai.net", "*.akamaihd.net", "*.akamaized.net", "*.delivery.mp.microsoft.com"]
+"*xboxlive.cn" = ["*.xboxlive.cn", "*.xboxlive.com", "*.akamai.net", "*.akamaihd.net", "*.akamaized.net"]
+"*delivery.mp.microsoft.com" = ["*.delivery.mp.microsoft.com", "*.akamai.net", "*.akamaihd.net", "*.akamaized.net"]
+"*xb.delivery.microsoft.com" = ["*.delivery.mp.microsoft.com", "*.akamai.net", "*.akamaihd.net", "*.akamaized.net"]
+"*xvc" = ["*.xboxlive.com", "*.xboxlive.cn", "*.akamai.net", "*.akamaihd.net", "*.akamaized.net"]
+
+# PlayStation / Nintendo / EA / Battle.net
+"*playstation.net" = ["*.playstation.net", "*.akamai.net", "*.akamaihd.net", "*.akamaized.net"]
+"*nintendo.net" = ["*.nintendo.net", "*.akamai.net", "*.akamaihd.net", "*.akamaized.net"]
+"*ea.com" = ["*.ea.com", "*.akamaihd.net", "*.akamai.net"]
+"*blizzard.com" = ["*.blizzard.com", "*.akamaihd.net", "*.akamai.net"]
+"*battle.net" = ["*.battle.net", "*.akamaihd.net", "*.akamai.net"]
+"*ubisoft.com" = ["*.ubisoft.com", "*.akamai.net", "*.akamaihd.net", "*.akamaized.net"]
+"*ubi.com" = ["*.ubi.com", "*.ubisoft.com", "*.akamai.net", "*.akamaihd.net", "*.akamaized.net"]
+"*epicgames.com" = ["*.epicgames.com", "*.akamai.net", "*.akamaihd.net", "*.akamaized.net"]
+"*steamstatic.com" = ["*.steamstatic.com", "*.akamai.net", "*.akamaihd.net", "*.akamaized.net"]

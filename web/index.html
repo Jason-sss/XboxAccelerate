@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XboxDownload — 游戏下载加速</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">Xbox</span><span class="logo-alt">Download</span>
+    <span class="tagline">游戏下载加速 · Web 版</span>
+  </div>
+  <div class="status-strip" id="statusStrip">
+    <span class="pill" id="pillDns">DNS <b>—</b></span>
+    <span class="pill" id="pillProxy">代理 <b>—</b></span>
+    <span class="pill" id="pillQueries">查询 <b>0</b></span>
+    <span class="pill" id="pillRelayed">中继 <b>0</b></span>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button class="tab active" data-panel="accel">加速地址</button>
+  <button class="tab" data-panel="speedtest">测速</button>
+  <button class="tab" data-panel="hosts">主机映射</button>
+  <button class="tab" data-panel="settings">设置</button>
+  <button class="tab" data-panel="logs">日志</button>
+</nav>
+
+<main>
+  <!-- ============ 加速地址 ============ -->
+  <section class="panel active" id="panel-accel">
+    <div class="panel-head">
+      <h2>加速地址</h2>
+      <div class="panel-actions">
+        <button class="btn" id="btnRefreshAccel">刷新</button>
+        <button class="btn danger" id="btnClearAccel">清空全部</button>
+      </div>
+    </div>
+    <p class="hint">
+      为每个服务手动指定加速 IP。保存后，命中该服务域名的连接会被固定到该 IP（保留原始 Host / SNI）。
+      留空表示不加速，走正常解析。
+    </p>
+    <div class="accel-switch-row">
+      <label class="switch-label">
+        <input type="checkbox" id="gameLinksToggle" checked>
+        <span>显示 Xbox 游戏下载链接</span>
+      </label>
+      <span class="switch-hint" id="gameLinksHint"></span>
+    </div>
+    <div class="accel-grid" id="accelGrid"></div>
+
+    <h3>主机名解析测试</h3>
+    <div class="inline-form">
+      <input type="text" id="resolveHost" placeholder="例如 assets1.xboxlive.com" value="assets1.xboxlive.com">
+      <select id="resolveType"><option value="A">A</option><option value="AAAA">AAAA</option></select>
+      <button class="btn primary" id="btnResolve">解析</button>
+    </div>
+    <pre class="result-box" id="resolveResult">—</pre>
+  </section>
+
+  <!-- ============ 测速 ============ -->
+  <section class="panel" id="panel-speedtest">
+    <div class="panel-head">
+      <h2>测速</h2>
+    </div>
+    <p class="hint">
+      对候选加速地址发起真实下载测试，测量首包延迟（延迟）、持续下载速度（速度）与 TTL。
+    </p>
+
+    <div class="inline-form">
+      <select id="stGroup"></select>
+      <select id="stTarget"></select>
+      <label class="field-inline">并发
+        <input type="number" id="stConcurrency" value="8" min="1" max="32" style="width:70px">
+      </label>
+      <label class="field-inline">最多测试
+        <input type="number" id="stLimit" value="20" min="1" max="200" style="width:80px">
+      </label>
+      <button class="btn primary" id="btnSpeedtest">开始测速</button>
+    </div>
+
+    <div class="inline-form">
+      <input type="text" id="stManualIps" placeholder="手动指定 IP，逗号分隔（留空则使用 IP 池）">
+    </div>
+
+    <div class="speed-summary" id="speedSummary" hidden>
+      <div class="speed-card best">
+        <div class="speed-card-label">最快地址</div>
+        <div class="speed-card-ip" id="bestIp">—</div>
+        <div class="speed-card-meta">
+          <span id="bestSpeed">—</span> · <span id="bestLatency">—</span>
+        </div>
+        <button class="btn small primary" id="btnUseBest">用作加速地址</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table" id="stTable">
+        <thead>
+          <tr>
+            <th>IP 地址</th>
+            <th>位置</th>
+            <th class="num">速度 (MiB/s)</th>
+            <th class="num">延迟 (ms)</th>
+            <th class="num">TTL</th>
+            <th class="num">下载 (MiB)</th>
+            <th>状态</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="stBody">
+          <tr class="empty"><td colspan="8">尚未测速</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ 主机映射 ============ -->
+  <section class="panel" id="panel-hosts">
+    <div class="panel-head">
+      <h2>主机映射</h2>
+      <div class="panel-actions">
+        <button class="btn" id="btnRefreshHosts">刷新</button>
+        <button class="btn danger" id="btnClearHosts">清空</button>
+      </div>
+    </div>
+    <p class="hint">手工添加的域名 → IP 映射，优先级高于内置服务规则。</p>
+
+    <div class="inline-form">
+      <input type="text" id="hostName" placeholder="域名，例如 assets1.xboxlive.com">
+      <input type="text" id="hostIp" placeholder="IP，例如 23.64.58.45">
+      <input type="text" id="hostNote" placeholder="备注（可选）">
+      <button class="btn primary" id="btnAddHost">添加</button>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr><th>启用</th><th>域名</th><th>IP</th><th>备注</th><th></th></tr>
+        </thead>
+        <tbody id="hostBody"><tr class="empty"><td colspan="5">暂无映射</td></tr></tbody>
+      </table>
+    </div>
+
+    <h3>内置服务规则</h3>
+    <div class="rules" id="rulesList"></div>
+  </section>
+
+  <!-- ============ 设置 ============ -->
+  <section class="panel" id="panel-settings">
+    <div class="panel-head">
+      <h2>设置</h2>
+      <div class="panel-actions">
+        <button class="btn danger" id="btnResetSettings">恢复默认</button>
+      </div>
+    </div>
+    <div class="settings-grid" id="settingsGrid"></div>
+  </section>
+
+  <!-- ============ 日志 ============ -->
+  <section class="panel" id="panel-logs">
+    <div class="panel-head">
+      <h2>服务日志</h2>
+      <div class="panel-actions">
+        <button class="btn" id="btnRefreshLogs">刷新</button>
+        <label class="field-inline">自动刷新
+          <input type="checkbox" id="autoRefresh" checked>
+        </label>
+      </div>
+    </div>
+    <pre class="log-box" id="logBox">—</pre>
+  </section>
+</main>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="/app.js"></script>
+</body>
+</html>
